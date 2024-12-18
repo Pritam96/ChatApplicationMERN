@@ -30,11 +30,7 @@ exports.allUsers = async (req, res, next) => {
       };
     }
     const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users,
-    });
+    res.status(200).json(users);
   } catch (error) {
     next(error);
   }
