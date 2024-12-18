@@ -1,4 +1,4 @@
-import { Box, Input, Text, VStack } from "@chakra-ui/react";
+import { Box, Input, Spinner, Text, VStack } from "@chakra-ui/react";
 import { Tooltip } from "../UI/tooltip";
 import { Button } from "../UI/button";
 import { Avatar } from "../UI/avatar";
@@ -54,9 +54,11 @@ const SideDrawer = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResult, setSearchResult] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(false);
 
-  const { user } = ChatState();
+  const { user, setSelectedChat, currentChats, setCurrentChats } = ChatState();
+
   const navigate = useNavigate();
 
   const logoutHandler = () => {
@@ -77,7 +79,7 @@ const SideDrawer = () => {
     }
 
     try {
-      setLoading(true);
+      setLoadingSearch(true);
       const config = {
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -102,12 +104,40 @@ const SideDrawer = () => {
         duration: 5000,
       });
     } finally {
-      setLoading(false);
+      setLoadingSearch(false);
     }
   };
 
-  const accessChatHandler = (userId) => {
-    console.log("Clicked:", userId);
+  const accessChatHandler = async (userId) => {
+    try {
+      setLoadingChat(true);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { data } = await axios.post("/api/v1/chat", { userId }, config);
+
+      if (!currentChats.find((chat) => chat._id === data._id)) {
+        setCurrentChats([data, ...currentChats]);
+      }
+      setSelectedChat(data);
+      handleCloseDrawer();
+    } catch (error) {
+      // console.error("Login failed:", error, error.response?.data?.error);
+
+      toaster.create({
+        title: "Error",
+        description: error.response?.data?.error || "Error fetching the chat",
+        type: "error",
+        placement: "bottom-end",
+        duration: 5000,
+      });
+    } finally {
+      setLoadingChat(false);
+    }
   };
 
   const handleOpenDialog = () => {
@@ -120,6 +150,10 @@ const SideDrawer = () => {
 
   const handleOpenDrawer = () => {
     setOpenDrawer(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
   };
 
   return (
@@ -248,7 +282,7 @@ const SideDrawer = () => {
               ></Input>
               <Button onClick={handleSearch}>Go</Button>
             </Box>
-            {loading ? (
+            {loadingSearch ? (
               <ChatListSkeleton />
             ) : (
               searchResult?.map((user) => (
@@ -260,6 +294,7 @@ const SideDrawer = () => {
               ))
             )}
           </DrawerBody>
+          {loadingChat && <Spinner mx="auto" mb="4" />}
           <DrawerCloseTrigger />
         </DrawerContent>
       </DrawerRoot>

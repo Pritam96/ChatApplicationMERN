@@ -31,8 +31,8 @@ exports.accessChat = async (req, res, next) => {
           $and: [
             { isGroupChat: false },
             { users: new mongoose.Types.ObjectId(req.user._id) },
-            { users: new mongoose.Types.ObjectId(userId) }
-          ]
+            { users: new mongoose.Types.ObjectId(userId) },
+          ],
         },
       },
       {
@@ -46,11 +46,11 @@ exports.accessChat = async (req, res, next) => {
               $project: {
                 name: 1,
                 email: 1,
-                phone: 1
-              }
-            }
-          ]
-        }
+                phone: 1,
+              },
+            },
+          ],
+        },
       },
       {
         $lookup: {
@@ -70,43 +70,40 @@ exports.accessChat = async (req, res, next) => {
                     $project: {
                       name: 1,
                       email: 1,
-                      phone: 1
-                    }
-                  }
-                ]
-              }
+                      phone: 1,
+                    },
+                  },
+                ],
+              },
             },
             {
               $addFields: {
                 sender: {
-                  $first: "$sender"
-                }
-              }
+                  $first: "$sender",
+                },
+              },
             },
             {
               $project: {
                 sender: 1,
                 content: 1,
                 createdAt: 1,
-              }
-            }
-          ]
-        }
+              },
+            },
+          ],
+        },
       },
       {
         $addFields: {
           latestMessage: {
-            $first: "$latestMessage"
-          }
-        }
-      }
+            $first: "$latestMessage",
+          },
+        },
+      },
     ]);
 
     if (chat.length > 0) {
-      return res.status(200).json({
-        success: true,
-        data: chat[0],
-      });
+      return res.status(200).json(chat[0]);
     }
 
     // Create new one-to-one chat
@@ -123,7 +120,7 @@ exports.accessChat = async (req, res, next) => {
     const fullChat = await Chat.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(createdChat._id)
+          _id: new mongoose.Types.ObjectId(createdChat._id),
         },
       },
       {
@@ -137,11 +134,11 @@ exports.accessChat = async (req, res, next) => {
               $project: {
                 name: 1,
                 email: 1,
-                phone: 1
-              }
-            }
-          ]
-        }
+                phone: 1,
+              },
+            },
+          ],
+        },
       },
       {
         $project: {
@@ -150,16 +147,11 @@ exports.accessChat = async (req, res, next) => {
           users: 1,
           createdAt: 1,
           updatedAt: 1,
-        }
-      }
+        },
+      },
     ]);
 
-    res.status(200).json({
-      success: true,
-      data: fullChat[0],
-      // data: fullChat,
-    });
-
+    res.status(200).json(fullChat[0]);
   } catch (error) {
     next(error);
   }
@@ -184,11 +176,7 @@ exports.fetchChats = async (req, res, next) => {
       select: "name email phone",
     });
 
-    res.status(200).json({
-      success: true,
-      count: chats.length,
-      data: chats,
-    });
+    res.status(200).json(chats);
   } catch (error) {
     next(error);
   }
@@ -228,10 +216,7 @@ exports.createGroupChat = async (req, res, next) => {
       .populate("groupAdmin")
       .populate("latestMessage");
 
-    res.status(200).json({
-      success: true,
-      data: fullGroupChat,
-    });
+    res.status(200).json(fullGroupChat);
   } catch (error) {
     next(error);
   }

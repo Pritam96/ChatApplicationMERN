@@ -1,4 +1,4 @@
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Spinner, Text } from "@chakra-ui/react";
 import { Avatar } from "../UI/avatar";
 
 const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
