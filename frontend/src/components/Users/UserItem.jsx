@@ -1,12 +1,6 @@
-import { Box, Spinner, Text } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import { Avatar } from "../UI/avatar";
-
-const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
-
-const pickPalette = (name) => {
-  const index = name.charCodeAt(0) % colorPalette.length;
-  return colorPalette[index];
-};
+import pickPalette from "../../utils/pickPalette";
 
 const UserItem = ({ user, handleFunction }) => {
   return (

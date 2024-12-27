@@ -1,4 +1,4 @@
-import { Box, Input, Spinner, Text, VStack } from "@chakra-ui/react";
+import { Box, Input, Spinner, Stack, Text } from "@chakra-ui/react";
 import { Tooltip } from "../UI/tooltip";
 import { Button } from "../UI/button";
 import { Avatar } from "../UI/avatar";
@@ -20,17 +20,6 @@ import {
   MenuTrigger,
 } from "../UI/menu";
 
-import {
-  DialogActionTrigger,
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-} from "../UI/dialog";
-
 import { LuArrowDown, LuBell, LuSearch } from "react-icons/lu";
 
 import { useState } from "react";
@@ -41,13 +30,8 @@ import { toaster } from "../UI/toaster";
 import axios from "axios";
 import ChatListSkeleton from "../Chats/ChatListSkeleton";
 import UserItem from "../Users/UserItem";
-
-const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
-
-const pickPalette = (name) => {
-  const index = name.charCodeAt(0) % colorPalette.length;
-  return colorPalette[index];
-};
+import pickPalette from "../../utils/pickPalette";
+import ProfileModal from "./ProfileModal";
 
 const SideDrawer = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -87,14 +71,12 @@ const SideDrawer = () => {
       };
 
       const { data } = await axios.get(
-        `api/v1/user?search=${searchKeyword}`,
+        `/api/v1/user?search=${searchKeyword}`,
         config
       );
 
       setSearchResult(data);
     } catch (error) {
-      // console.error("Login failed:", error, error.response?.data?.error);
-
       toaster.create({
         title: "Error",
         description:
@@ -126,8 +108,6 @@ const SideDrawer = () => {
       setSelectedChat(data);
       handleCloseDrawer();
     } catch (error) {
-      // console.error("Login failed:", error, error.response?.data?.error);
-
       toaster.create({
         title: "Error",
         description: error.response?.data?.error || "Error fetching the chat",
@@ -142,10 +122,6 @@ const SideDrawer = () => {
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
   };
 
   const handleOpenDrawer = () => {
@@ -168,7 +144,11 @@ const SideDrawer = () => {
         borderWidth="5px"
       >
         <Tooltip label="Search users to chat" placement="bottom-end">
-          <Button variant="surface" onClick={handleOpenDrawer}>
+          <Button
+            variant="surface"
+            onClick={handleOpenDrawer}
+            aria-label="Search Users"
+          >
             <LuSearch />
             <Text display={{ base: "none", md: "flex" }} px="4">
               Search User
@@ -181,7 +161,7 @@ const SideDrawer = () => {
         <div>
           <MenuRoot>
             <MenuTrigger asChild>
-              <Button variant="outline" size="md">
+              <Button variant="outline" size="md" aria-label="Notifications">
                 <LuBell />
               </Button>
             </MenuTrigger>
@@ -192,7 +172,13 @@ const SideDrawer = () => {
 
           <MenuRoot>
             <MenuTrigger asChild>
-              <Button variant="ghost" size="md" mx="8px" py="2px">
+              <Button
+                variant="ghost"
+                size="md"
+                mx="8px"
+                py="2px"
+                aria-label="User Menu"
+              >
                 <Avatar
                   variant="subtle"
                   size="sm"
@@ -221,46 +207,11 @@ const SideDrawer = () => {
         </div>
       </Box>
 
-      <DialogRoot
-        placement="center"
-        motionPreset="slide-in-bottom"
-        lazyMount
-        open={openDialog}
-        onOpenChange={(e) => setOpenDialog(e.open)}
-      >
-        <DialogContent h="400px">
-          <DialogHeader>
-            <DialogTitle
-              fontSize="32px"
-              fontFamily="Roboto, sans-serif"
-              display="flex"
-              justifyContent="center"
-            >
-              {user.name}
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <VStack gap="4">
-              <Avatar size="2xl" name={user.name} src="" />
-              <Text fontSize="24px" fontFamily="Roboto, sans-serif">
-                Email: {user.email}
-              </Text>
-            </VStack>
-          </DialogBody>
-          <DialogFooter>
-            <DialogActionTrigger asChild>
-              <Button variant="outline" onClick={handleCloseDialog}>
-                Close
-              </Button>
-            </DialogActionTrigger>
-          </DialogFooter>
-          <DialogCloseTrigger />
-        </DialogContent>
-      </DialogRoot>
+      <ProfileModal
+        user={user}
+        openDialog={openDialog}
+        setOpenDialog={setOpenDialog}
+      />
 
       <DrawerRoot
         placement="start"
@@ -280,19 +231,24 @@ const SideDrawer = () => {
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               ></Input>
-              <Button onClick={handleSearch}>Go</Button>
+              <Button onClick={handleSearch} aria-label="Search">
+                Go
+              </Button>
             </Box>
-            {loadingSearch ? (
-              <ChatListSkeleton />
-            ) : (
-              searchResult?.map((user) => (
-                <UserItem
-                  key={user._id}
-                  user={user}
-                  handleFunction={() => accessChatHandler(user._id)}
-                />
-              ))
-            )}
+
+            <Stack spacing={2} w="100%" overflowY="auto">
+              {loadingSearch ? (
+                <ChatListSkeleton />
+              ) : (
+                searchResult?.map((user) => (
+                  <UserItem
+                    key={user._id}
+                    user={user}
+                    handleFunction={() => accessChatHandler(user._id)}
+                  />
+                ))
+              )}
+            </Stack>
           </DrawerBody>
           {loadingChat && <Spinner mx="auto" mb="4" />}
           <DrawerCloseTrigger />

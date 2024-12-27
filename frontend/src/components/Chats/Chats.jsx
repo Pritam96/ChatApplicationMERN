@@ -3,12 +3,13 @@ import { ChatState } from "../../Context/ChatProvider";
 import SideDrawer from "../miscellaneous/SideDrawer";
 import ChatList from "./ChatList";
 import ChatWindow from "./ChatWindow";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Chats = () => {
   const { user } = ChatState();
   const navigate = useNavigate();
+  const [refetch, setRefetch] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -26,8 +27,8 @@ const Chats = () => {
         h="90vh"
         p="10px"
       >
-        {user && <ChatList />}
-        {user && <ChatWindow />}
+        {user && <ChatList refetch={refetch} />}
+        {user && <ChatWindow refetch={refetch} doRefetch={setRefetch} />}
       </Box>
     </div>
   );

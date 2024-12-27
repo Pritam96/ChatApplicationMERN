@@ -295,40 +295,53 @@ exports.removeFromGroup = async (req, res, next) => {
     if (!updatedChat) {
       return next(new ErrorResponse("chatId not found", 400));
     }
-    res.status(200).json({
-      success: true,
-      data: updatedChat,
-    });
+    res.status(200).json(updatedChat);
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update group members
+// @desc    Update group
 // @route   PUT /api/v1/chat/groupupdate
 // @access  Private
-exports.updateGroupMembers = async (req, res, next) => {
+exports.updateGroup = async (req, res, next) => {
   try {
-    const { chatId, updatedUsers } = req.body;
+    const { chatId, updatedName, updatedUsers } = req.body;
 
-    let users = JSON.parse(updatedUsers);
+    if (!updatedName && !updatedUsers) {
+      return next(
+        new ErrorResponse("Provide updated group name or updated users", 400)
+      );
+    }
 
-    // Adding req.user to the group
-    users.push(req.user);
+    const data = {};
 
-    const groupChat = await Chat.findByIdAndUpdate(chatId, {
-      users,
+    if (updatedName) {
+      data.chatName = updatedName;
+    }
+
+    if (updatedUsers) {
+      try {
+        data.users = JSON.parse(updatedUsers);
+      } catch (error) {
+        return next(new ErrorResponse("Invalid format for updated users", 400));
+      }
+    }
+
+    const groupChat = await Chat.findByIdAndUpdate(chatId, data, {
+      new: true,
     });
+
+    if (!groupChat) {
+      return next(new ErrorResponse("Group chat not found", 404));
+    }
 
     const fullGroupChat = await Chat.findById(groupChat._id)
       .populate("users")
       .populate("groupAdmin")
       .populate("latestMessage");
 
-    res.status(200).json({
-      success: true,
-      data: fullGroupChat,
-    });
+    res.status(200).json(fullGroupChat);
   } catch (error) {
     next(error);
   }
