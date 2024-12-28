@@ -148,7 +148,7 @@ const Register = () => {
           type="submit"
           w="100%"
           colorPalette="cyan"
-          onClick={submitFormHandler}
+          onClick={() => submitFormHandler()}
           loading={loading}
           loadingText="Registering..."
         >

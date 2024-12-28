@@ -60,7 +60,7 @@ const Login = () => {
       localStorage.setItem("userInfo", JSON.stringify(data));
       navigate("/chats");
     } catch (error) {
-      // console.error("Login failed:", error, error.response?.data?.error);
+      // console.log("Login failed:", error);
 
       toaster.create({
         title: "Error",
@@ -110,7 +110,7 @@ const Login = () => {
           type="submit"
           w="100%"
           colorPalette="cyan"
-          onClick={submitFormHandler}
+          onClick={() => submitFormHandler()}
           loading={loading}
           loadingText="Logging in..."
         >

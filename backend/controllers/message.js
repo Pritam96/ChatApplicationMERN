@@ -52,10 +52,7 @@ exports.sendMessage = async (req, res, next) => {
       latestMessage: message,
     });
 
-    res.status(200).json({
-      success: true,
-      data: message,
-    });
+    res.status(200).json(message);
   } catch (error) {
     next(error);
   }
@@ -70,11 +67,7 @@ exports.allMessages = async (req, res, next) => {
       .populate("sender", "name email phone")
       .populate("chat");
 
-    res.status(200).json({
-      success: true,
-      count: messages.length,
-      data: messages,
-    });
+    res.status(200).json(messages);
   } catch (error) {
     next(error);
   }

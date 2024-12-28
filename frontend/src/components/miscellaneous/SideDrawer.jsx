@@ -250,7 +250,7 @@ const SideDrawer = () => {
               )}
             </Stack>
           </DrawerBody>
-          {loadingChat && <Spinner mx="auto" mb="4" />}
+          {loadingChat && <Spinner alignSelf="center" mb="4" />}
           <DrawerCloseTrigger />
         </DrawerContent>
       </DrawerRoot>

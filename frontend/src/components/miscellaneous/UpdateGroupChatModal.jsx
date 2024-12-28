@@ -292,7 +292,7 @@ const UpdateGroupChatModal = ({
 
               <Stack spacing={2} w="100%" maxH="150px" overflowY="auto">
                 {searchLoading ? (
-                  <Spinner mx="auto" />
+                  <Spinner alignSelf="center" />
                 ) : (
                   searchResult.map((user) => (
                     <UserItem

@@ -7,21 +7,29 @@ import { Button } from "../UI/button";
 import { LuPlus } from "react-icons/lu";
 import ChatListSkeleton from "./ChatListSkeleton";
 import GroupChatModal from "../miscellaneous/GroupChatModal";
-import getSender from "../../utils/getSender";
+import { getSender } from "../../utils/helper";
 
 const ChatList = ({ refetch }) => {
-  const [loggedInUser, setLoggedInUser] = useState();
   const [openDialog, setOpenDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { user, selectedChat, setSelectedChat, currentChats, setCurrentChats } =
     ChatState();
 
-  const fetchChats = async () => {
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("userInfo"));
+    if (loggedInUser) {
+      fetchChats(loggedInUser);
+    }
+  }, [refetch]);
+
+  const fetchChats = async (loggedInUser) => {
+    setLoading(true);
     try {
       const config = {
         headers: {
           "Content-type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${loggedInUser.token}`,
         },
       };
 
@@ -35,13 +43,10 @@ const ChatList = ({ refetch }) => {
         placement: "bottom-end",
         duration: 5000,
       });
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    setLoggedInUser(JSON.parse(localStorage.getItem("userInfo")));
-    fetchChats();
-  }, [refetch]);
 
   return (
     <>
@@ -72,7 +77,7 @@ const ChatList = ({ refetch }) => {
             colorPalette="cyan"
             display="flex"
             fontSize={{ base: "16px", md: "10px", lg: "16px" }}
-            onClick={() => setOpenDialog(true)} // Opens dialog
+            onClick={() => setOpenDialog(true)}
           >
             New Group Chat
             <LuPlus />
@@ -88,7 +93,7 @@ const ChatList = ({ refetch }) => {
           borderRadius="lg"
           overflowY="hidden"
         >
-          {currentChats ? (
+          {!loading && currentChats ? (
             <Stack overflowY="scroll">
               {currentChats.map((chat) => (
                 <Box
@@ -102,7 +107,7 @@ const ChatList = ({ refetch }) => {
                 >
                   <Text>
                     {!chat.isGroupChat
-                      ? getSender(loggedInUser, chat.users).name
+                      ? getSender(user, chat.users).name
                       : chat.chatName}
                   </Text>
                 </Box>

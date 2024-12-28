@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Spinner } from "@chakra-ui/react";
 import { ChatState } from "../../Context/ChatProvider";
 import SideDrawer from "../miscellaneous/SideDrawer";
 import ChatList from "./ChatList";
@@ -10,12 +10,19 @@ const Chats = () => {
   const { user } = ChatState();
   const navigate = useNavigate();
   const [refetch, setRefetch] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (user === undefined) return;
     if (!user) {
       navigate("/");
     }
+    setLoading(false);
   }, [user, navigate]);
+
+  if (loading) {
+    return <Spinner alignSelf="center" margin="auto" size="xl" />;
+  }
 
   return (
     <div style={{ width: "100%" }}>
