@@ -55,50 +55,49 @@ const server = app.listen(
 );
 
 // Socket.io setup
-// const io = new Server(server, {
-//   cors: { origin: `http://localhost:${PORT}` }, // Configure CORS
-// });
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
-// io.on("connection", (socket) => {
-//   console.log(`User is connected with id: ${socket.id}`);
+io.on("connection", (socket) => {
+  // console.log(`User is connected with id: ${socket.id}`);
 
-//   socket.on("send-message", (message) => {
-//     // Emit message to each user in the chat except the sender
-//     message.chat.users.forEach((user) => {
-//       if (user._id !== message.sender._id) {
-//         socket.in(user._id).emit("receive-message", message);
-//       }
-//     });
-//   });
+  socket.on("setup", (userData) => {
+    socket.join(userData._id);
+    // console.log("USER DATA / user:", userData);
+    socket.emit("connected");
+  });
 
-//   socket.on("join-room", (room, callback) => {
-//     socket.join(room);
-//     callback(`Joined ${room}`); // Send a callback message to the client
-//   });
+  socket.on("join-chat", (room) => {
+    socket.join(room);
+    // console.log("ROOM JOINED / selectedChat._id:", room);
+  });
 
-//   // Handle disconnect
-//   socket.on("disconnect", async () => {
-//     console.log(`User disconnected with id: ${socket.id}`);
-//   });
+  socket.on("typing", (room) => socket.in(room).emit("typing"));
+  socket.on("stop-typing", (room) => socket.in(room).emit("stop-typing"));
 
-//   // Handle disconnect-and-leave-room
-//   socket.on("disconnect-and-leave-room", (data, callback) => {
-//     // Leave any rooms the user has joined
-//     const rooms = Object.keys(socket.rooms);
-//     rooms.forEach((room) => {
-//       if (room !== socket.id) {
-//         socket.leave(room);
-//         console.log(`User left room: ${room}`);
-//       }
-//     });
+  socket.on("new-message", (receivedMessage) => {
+    // check which chat(room) does this belongs to
+    var chat = receivedMessage.chat;
 
-//     // Disconnect the socket
-//     socket.disconnect();
+    if (!chat.users) return console.log("chat.users not defined");
 
-//     // Callback to the client
-//     callback();
-//   });
-// });
+    chat.users.forEach((user) =>
+      user._id !== receivedMessage.sender._id
+        ? socket.in(user._id).emit("received-message", receivedMessage)
+        : null
+    );
+  });
+
+  socket.off("setup", () => {
+    // console.log("Socket Disconnected!");
+    socket.leave(userData._id);
+  });
+});
 
 // Schedule the archiving job to run every night at midnight
 cron.schedule("0 0 * * *", archiveMessages);

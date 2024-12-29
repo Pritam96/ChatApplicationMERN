@@ -8,6 +8,12 @@ import ScrollableChat from "./ScrollableChat";
 import axios from "axios";
 import { Toaster } from "../UI/toaster";
 import { getSender } from "../../utils/helper";
+import io from "socket.io-client";
+import Lottie from "react-lottie";
+import animationData from "../../animations/typing.json";
+
+const ENDPOINT = "http://localhost:5000";
+var socket, selectedChatCompare;
 
 const SingleChat = ({ refetch, doRefetch }) => {
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
@@ -17,12 +23,51 @@ const SingleChat = ({ refetch, doRefetch }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
   const { user, selectedChat, setSelectedChat } = ChatState();
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: "zMidYMid slice",
+    },
+  };
 
   const sender =
     selectedChat && !selectedChat.isGroupChat
       ? getSender(user, selectedChat.users)
       : null;
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", user);
+    socket.on("connected", () => setSocketConnected(true));
+    socket.on("typing", () => setIsTyping(true));
+    socket.on("stop-typing", () => setIsTyping(false));
+  }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("received-message", (newMessage) => {
+      if (
+        !selectedChatCompare ||
+        selectedChatCompare._id !== newMessage.chat._id
+      ) {
+        // send notification
+      } else {
+        setMessages([...messages, newMessage]);
+      }
+    });
+  });
+
+  useEffect(() => {
+    fetchMessages();
+    selectedChatCompare = selectedChat;
+  }, [selectedChat]);
 
   const handleOpenDialog = () => {
     if (selectedChat.isGroupChat) setOpenUpdateGroupDialog(true);
@@ -31,9 +76,28 @@ const SingleChat = ({ refetch, doRefetch }) => {
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
+
+    if (!socketConnected) return;
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+
+    let lastTypingTime = new Date().getTime();
+    var timerLength = 3000;
+
+    setTimeout(() => {
+      let timeNow = new Date().getTime();
+      let timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLength && typing) {
+        socket.emit("stop-typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, timerLength);
   };
 
   const sendMessage = async () => {
+    socket.emit("stop-typing", selectedChat._id);
     if (!newMessage.trim()) return;
     try {
       setNewMessage("");
@@ -51,6 +115,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
       );
 
       setMessages((prevMessages) => [...prevMessages, data]);
+      socket.emit("new-message", data);
     } catch (error) {
       Toaster.create({
         title: "Error Occurred!",
@@ -81,6 +146,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
       );
 
       setMessages(data);
+      socket.emit("join-chat", selectedChat._id);
     } catch (error) {
       Toaster.create({
         title: "Error Occurred!",
@@ -94,10 +160,6 @@ const SingleChat = ({ refetch, doRefetch }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchMessages();
-  }, [selectedChat]);
 
   return (
     <>
@@ -176,6 +238,23 @@ const SingleChat = ({ refetch, doRefetch }) => {
               </div>
             )}
 
+            {isTyping && (
+              <div
+                style={{
+                  marginRight: "auto",
+                }}
+              >
+                <Lottie
+                  options={defaultOptions}
+                  height={30}
+                  backgroundColor="white"
+                  style={{
+                    marginBottom: 15,
+                    marginRight: 0,
+                  }}
+                />
+              </div>
+            )}
             <Stack direction="row" w="100%" spacing={2}>
               <Input
                 variant="subtle"
