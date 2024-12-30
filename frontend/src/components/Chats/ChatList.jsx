@@ -110,6 +110,12 @@ const ChatList = ({ refetch }) => {
                       ? getSender(user, chat.users).name
                       : chat.chatName}
                   </Text>
+                  {chat.latestMessage && (
+                    <Text fontSize="sm">
+                      <em>{chat.latestMessage.sender.name}:</em>{" "}
+                      {chat.latestMessage.content}
+                    </Text>
+                  )}
                 </Box>
               ))}
             </Stack>

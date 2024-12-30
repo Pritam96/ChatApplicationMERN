@@ -27,14 +27,15 @@ const SingleChat = ({ refetch, doRefetch }) => {
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification } =
+    ChatState();
 
   const defaultOptions = {
     loop: true,
     autoplay: true,
     animationData: animationData,
     rendererSettings: {
-      preserveAspectRatio: "zMidYMid slice",
+      preserveAspectRatio: "xMidYMid slice",
     },
   };
 
@@ -49,7 +50,11 @@ const SingleChat = ({ refetch, doRefetch }) => {
     socket.on("connected", () => setSocketConnected(true));
     socket.on("typing", () => setIsTyping(true));
     socket.on("stop-typing", () => setIsTyping(false));
-  }, [selectedChat]);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [selectedChat, user]);
 
   useEffect(() => {
     socket.on("received-message", (newMessage) => {
@@ -58,15 +63,34 @@ const SingleChat = ({ refetch, doRefetch }) => {
         selectedChatCompare._id !== newMessage.chat._id
       ) {
         // send notification
+        if (
+          !notification.find((item) => item.chat._id === newMessage.chat._id)
+        ) {
+          setNotification([newMessage, ...notification]);
+          doRefetch(!refetch);
+        }
       } else {
-        setMessages([...messages, newMessage]);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
       }
     });
+
+    return () => {
+      socket.off("received-message");
+    };
   });
 
   useEffect(() => {
     fetchMessages();
     selectedChatCompare = selectedChat;
+
+    setNotification((prevNotifications) => {
+      if (!selectedChat) return prevNotifications;
+      return prevNotifications.filter(
+        (item) => item.chat._id !== selectedChat._id
+      );
+    });
+
+    socket.emit("join-chat", selectedChat?._id);
   }, [selectedChat]);
 
   const handleOpenDialog = () => {
@@ -170,7 +194,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
             pd="3"
             px="2"
             w="100%"
-            font={"Roboto, sans-serif"}
+            font="Roboto, sans-serif"
             display="flex"
             justifyContent={{ base: "space-between" }}
             alignItems="center"
@@ -214,7 +238,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
           </Text>
           <Box
             display="flex"
-            flexDir="column"
+            flexDirection="column"
             justifyContent="flex-end"
             p="3"
             w="100%"
@@ -247,11 +271,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
                 <Lottie
                   options={defaultOptions}
                   height={30}
-                  backgroundColor="white"
-                  style={{
-                    marginBottom: 15,
-                    marginRight: 0,
-                  }}
+                  style={{ marginBottom: 15 }}
                 />
               </div>
             )}
@@ -259,11 +279,10 @@ const SingleChat = ({ refetch, doRefetch }) => {
               <Input
                 variant="subtle"
                 placeholder="Enter a message.."
+                aria-label="Message input field"
                 onChange={typingHandler}
                 value={newMessage}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") sendMessage();
-                }}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               />
               <IconButton aria-label="Send message" onClick={sendMessage}>
                 <LuSendHorizontal />
@@ -278,7 +297,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
           alignItems="center"
           h="100%"
         >
-          <Text fontSize="3xl" fontFamily={"Roboto, sans-serif"}>
+          <Text fontSize="3xl" fontFamily="Roboto, sans-serif">
             Click on a user to start chatting
           </Text>
         </Box>

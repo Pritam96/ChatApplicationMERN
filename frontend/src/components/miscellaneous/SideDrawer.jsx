@@ -1,4 +1,12 @@
-import { Box, Input, Spinner, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Circle,
+  Float,
+  Input,
+  Spinner,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import { Tooltip } from "../UI/tooltip";
 import { Button } from "../UI/button";
 import { Avatar } from "../UI/avatar";
@@ -32,6 +40,7 @@ import ChatListSkeleton from "../Chats/ChatListSkeleton";
 import UserItem from "../Users/UserItem";
 import pickPalette from "../../utils/pickPalette";
 import ProfileModal from "./ProfileModal";
+import { getSender } from "../../utils/helper";
 
 const SideDrawer = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -41,7 +50,14 @@ const SideDrawer = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
 
-  const { user, setSelectedChat, currentChats, setCurrentChats } = ChatState();
+  const {
+    user,
+    setSelectedChat,
+    currentChats,
+    setCurrentChats,
+    notification,
+    setNotification,
+  } = ChatState();
 
   const navigate = useNavigate();
 
@@ -163,10 +179,36 @@ const SideDrawer = () => {
             <MenuTrigger asChild>
               <Button variant="outline" size="md" aria-label="Notifications">
                 <LuBell />
+                {!notification.length ? null : (
+                  <Float offset="4">
+                    <Circle size="4" bg="red" color="white">
+                      {notification.length}
+                    </Circle>
+                  </Float>
+                )}
               </Button>
             </MenuTrigger>
             <MenuContent>
-              <MenuItem value="new-txt">New Text File</MenuItem>
+              {!notification.length && (
+                <MenuItem value="no-item">No New Messages</MenuItem>
+              )}
+              {notification &&
+                notification.map((item) => (
+                  <MenuItem
+                    value={item.chat._id}
+                    key={item.chat.updatedAt}
+                    onClick={() => {
+                      setSelectedChat(item.chat);
+                      setNotification(notification.filter((n) => n !== item));
+                    }}
+                  >
+                    {item.chat.isGroupChat
+                      ? `New Message in ${item.chat.chatName}`
+                      : `New Message from ${
+                          getSender(user, item.chat.users).name
+                        }`}
+                  </MenuItem>
+                ))}
             </MenuContent>
           </MenuRoot>
 
