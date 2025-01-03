@@ -52,6 +52,7 @@ const SideDrawer = () => {
 
   const {
     user,
+    setUser,
     setSelectedChat,
     currentChats,
     setCurrentChats,
@@ -63,6 +64,7 @@ const SideDrawer = () => {
 
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
+    setUser(null);
     navigate("/");
   };
 
@@ -225,6 +227,7 @@ const SideDrawer = () => {
                   variant="subtle"
                   size="sm"
                   name={user.name}
+                  src={user?.avatar || ""}
                   colorPalette={pickPalette(user.name)}
                 />
                 <Text>{user.name}</Text>
@@ -251,6 +254,7 @@ const SideDrawer = () => {
 
       <ProfileModal
         user={user}
+        setUser={setUser}
         openDialog={openDialog}
         setOpenDialog={setOpenDialog}
       />

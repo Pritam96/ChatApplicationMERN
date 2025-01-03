@@ -25,10 +25,11 @@ app.use(cors());
 app.use(express.json());
 
 // Multer configuration
-const memoryStorage = multer.memoryStorage();
+// const memoryStorage = multer.memoryStorage();
 
 // Multer middleware for file upload
-app.use(multer({ storage: memoryStorage }).single("file"));
+// app.use(multer({ storage: memoryStorage }).single("file"));
+app.use(express.static("./public"));
 
 // Define routes
 const auth = require("./routes/auth");

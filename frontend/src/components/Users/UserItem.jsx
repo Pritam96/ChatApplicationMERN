@@ -22,7 +22,7 @@ const UserItem = ({ user, handleFunction }) => {
         mr="2"
         size="sm"
         name={user.name}
-        src=""
+        src={user?.avatar || ""}
         colorPalette={pickPalette(user.name)}
       />
       <Box>

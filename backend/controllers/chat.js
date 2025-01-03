@@ -47,6 +47,7 @@ exports.accessChat = async (req, res, next) => {
                 name: 1,
                 email: 1,
                 phone: 1,
+                avatar: 1,
               },
             },
           ],
@@ -69,6 +70,7 @@ exports.accessChat = async (req, res, next) => {
                   {
                     $project: {
                       name: 1,
+                      avatar: 1,
                       email: 1,
                       phone: 1,
                     },
@@ -133,6 +135,7 @@ exports.accessChat = async (req, res, next) => {
             {
               $project: {
                 name: 1,
+                avatar: 1,
                 email: 1,
                 phone: 1,
               },
@@ -173,7 +176,7 @@ exports.fetchChats = async (req, res, next) => {
 
     chats = await User.populate(chats, {
       path: "latestMessage.sender",
-      select: "name email phone",
+      select: "name avatar email phone",
     });
 
     res.status(200).json(chats);

@@ -17,6 +17,7 @@ exports.register = async (req, res, next) => {
     res.status(200).json({
       _id: user._id,
       name: user.name,
+      avatar: user.avatar,
       email: user.email,
       phone: user.phone,
       token,
@@ -60,6 +61,7 @@ exports.login = async (req, res, next) => {
     res.status(200).json({
       _id: user._id,
       name: user.name,
+      avatar: user.avatar,
       email: user.email,
       phone: user.phone,
       token,

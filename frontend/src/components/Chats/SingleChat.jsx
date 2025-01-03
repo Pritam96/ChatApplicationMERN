@@ -139,6 +139,7 @@ const SingleChat = ({ refetch, doRefetch }) => {
       );
 
       setMessages((prevMessages) => [...prevMessages, data]);
+      doRefetch(!refetch);
       socket.emit("new-message", data);
     } catch (error) {
       Toaster.create({
