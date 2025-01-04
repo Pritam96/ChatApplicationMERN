@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../UI/button";
 import {
   DialogActionTrigger,
@@ -26,6 +26,15 @@ const GroupChatModal = ({ openDialog, setOpenDialog }) => {
   const [loading, setLoading] = useState(false);
 
   const { user, currentChats, setCurrentChats, setSelectedChat } = ChatState();
+
+  useEffect(() => {
+    if (!openDialog) {
+      setGroupChatName("");
+      setSelectedUsers([]);
+      setSearchKeyword("");
+      setSearchResult([]);
+    }
+  }, [openDialog]);
 
   const handleSearch = async (keyword) => {
     setSearchKeyword(keyword);

@@ -99,7 +99,11 @@ const ProfileModal = ({ user, setUser, openDialog, setOpenDialog }) => {
             {loading ? (
               <SkeletonCircle size="48" />
             ) : (
-              <Avatar size="3xl" name={user?.name} src={user?.avatar || ""} />
+              <Avatar
+                size={user?.avatar ? "3xl" : "2xl"}
+                name={user?.name}
+                src={user?.avatar || ""}
+              />
             )}
             <Text fontSize="20px" fontFamily="Roboto, sans-serif">
               Email: {user?.email || "N/A"}

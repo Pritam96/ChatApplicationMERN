@@ -4,16 +4,17 @@ import Login from "../Authentication/Login";
 import Register from "../Authentication/Register";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { ChatState } from "../../Context/ChatProvider";
 
 const Home = () => {
+  const { user } = ChatState();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userInfo"));
     if (user) {
       navigate("/chats");
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   return (
     <Container maxW="xl" centerContent>

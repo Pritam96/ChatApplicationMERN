@@ -8,6 +8,7 @@ import { LuPlus } from "react-icons/lu";
 import ChatListSkeleton from "./ChatListSkeleton";
 import GroupChatModal from "../miscellaneous/GroupChatModal";
 import { getSender } from "../../utils/helper";
+import { Avatar } from "../UI/avatar";
 
 const ChatList = ({ refetch }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -104,18 +105,38 @@ const ChatList = ({ refetch }) => {
                   bg={selectedChat === chat ? "white" : "#14213d"}
                   color={selectedChat === chat ? "black" : "white"}
                   borderRadius="sm"
+                  display="flex"
+                  alignItems="center"
+                  cursor="pointer"
+                  _hover={{ bg: "gray.700" }}
+                  gap="4"
                 >
-                  <Text>
-                    {!chat.isGroupChat
-                      ? getSender(user, chat.users).name
-                      : chat.chatName}
-                  </Text>
-                  {chat.latestMessage && (
-                    <Text fontSize="sm">
-                      <em>{chat.latestMessage.sender.name}:</em>{" "}
-                      {chat.latestMessage.content}
+                  <Avatar
+                    size="md"
+                    name={
+                      !chat.isGroupChat
+                        ? getSender(user, chat.users).name
+                        : chat.chatName
+                    }
+                    src={
+                      !chat.isGroupChat
+                        ? getSender(user, chat.users).avatar
+                        : ""
+                    }
+                  />
+                  <Box>
+                    <Text>
+                      {!chat.isGroupChat
+                        ? getSender(user, chat.users).name
+                        : chat.chatName}
                     </Text>
-                  )}
+                    {chat.latestMessage && (
+                      <Text fontSize="sm">
+                        <em>{chat.latestMessage.sender.name}:</em>{" "}
+                        {chat.latestMessage.content}
+                      </Text>
+                    )}
+                  </Box>
                 </Box>
               ))}
             </Stack>

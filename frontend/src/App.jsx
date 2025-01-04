@@ -14,7 +14,9 @@ import {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
+      {/*login & register*/}
       <Route index element={<Home />} />
+      {/* If authenticated, go to chats*/}
       <Route path="chats" element={<Chats />} />
     </Route>
   )

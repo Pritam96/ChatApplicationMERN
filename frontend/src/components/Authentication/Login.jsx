@@ -7,11 +7,14 @@ import { useState } from "react";
 import { toaster } from "../UI/toaster";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ChatState } from "../../Context/ChatProvider";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { setUser } = ChatState();
 
   const navigate = useNavigate();
 
@@ -57,6 +60,7 @@ const Login = () => {
         duration: 5000,
       });
 
+      setUser(data);
       localStorage.setItem("userInfo", JSON.stringify(data));
       navigate("/chats");
     } catch (error) {

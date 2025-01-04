@@ -13,14 +13,6 @@ const ChatProvider = ({ children }) => {
     setUser(userInfo);
   }, []);
 
-  // useEffect(() => {
-  //   console.log("SELECTED CHAT:", selectedChat);
-  // }, [selectedChat]);
-
-  // useEffect(() => {
-  //   console.log("CURRENT CHATS:", currentChats);
-  // }, [currentChats]);
-
   return (
     <ChatContext.Provider
       value={{

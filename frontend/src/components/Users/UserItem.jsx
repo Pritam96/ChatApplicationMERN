@@ -17,6 +17,7 @@ const UserItem = ({ user, handleFunction }) => {
         background: "white",
         color: "black",
       }}
+      cursor="pointer"
     >
       <Avatar
         mr="2"

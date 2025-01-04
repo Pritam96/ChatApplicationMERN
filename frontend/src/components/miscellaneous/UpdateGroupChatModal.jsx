@@ -41,11 +41,18 @@ const UpdateGroupChatModal = ({
   const { user, selectedChat, setSelectedChat } = ChatState();
 
   useEffect(() => {
-    if (selectedChat) {
+    if (!openDialog) {
+      setSearchKeyword("");
+      setSearchResult([]);
+    }
+  }, [openDialog]);
+
+  useEffect(() => {
+    if (selectedChat && !openDialog) {
       setGroupChatName(selectedChat.chatName || "");
       setSelectedUsers(selectedChat.users || []);
     }
-  }, [selectedChat]);
+  }, [selectedChat, openDialog]);
 
   const handleSearch = async (keyword) => {
     setSearchKeyword(keyword);

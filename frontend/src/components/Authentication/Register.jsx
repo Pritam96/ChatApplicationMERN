@@ -6,6 +6,7 @@ import { Button } from "../UI/button";
 import { toaster } from "../UI/toaster";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ChatState } from "../../Context/ChatProvider";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -14,6 +15,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { setUser } = ChatState();
 
   const navigate = useNavigate();
 
@@ -71,8 +74,8 @@ const Register = () => {
         duration: 5000,
       });
 
+      setUser(data);
       localStorage.setItem("userInfo", JSON.stringify(data));
-
       navigate("/chats");
     } catch (error) {
       // console.error("Login failed:", error, error.response?.data?.error);
